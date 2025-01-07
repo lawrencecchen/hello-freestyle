@@ -4,53 +4,52 @@ import path from "node:path";
 import ignore from "ignore";
 
 interface FileContent {
-	content: string;
-	encoding?: string;
+  content: string;
+  encoding?: string;
 }
 
 function readDirFiles(dirPath: string): Record<string, FileContent> {
-	const files: Record<string, FileContent> = {};
+  const files: Record<string, FileContent> = {};
 
-	// Initialize ignore instance
-	const ig = ignore();
+  // Initialize ignore instance
+  const ig = ignore();
 
-	// Read .gitignore if it exists
-	const gitignorePath = path.join(dirPath, ".gitignore");
-	if (fs.existsSync(gitignorePath)) {
-		const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
-		ig.add(gitignoreContent);
-	}
+  // Read .gitignore if it exists
+  const gitignorePath = path.join(dirPath, ".gitignore");
+  if (fs.existsSync(gitignorePath)) {
+    const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
+    ig.add(gitignoreContent);
+  }
 
-	const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
-	for (const entry of entries) {
-		if (entry.isFile()) {
-			const relativePath = entry.name;
-			// Skip if file is ignored by gitignore
-			if (ig.ignores(relativePath)) {
-				continue;
-			}
+  for (const entry of entries) {
+    if (entry.isFile()) {
+      const relativePath = entry.name;
+      // Skip if file is ignored by gitignore
+      if (ig.ignores(relativePath)) {
+        continue;
+      }
 
-			const filePath = path.join(dirPath, entry.name);
-			const content = fs.readFileSync(filePath, "utf-8");
-			files[entry.name] = { content };
-		}
-	}
+      const filePath = path.join(dirPath, entry.name);
+      const content = fs.readFileSync(filePath, "utf-8");
+      files[entry.name] = { content };
+    }
+  }
 
-	return files;
+  return files;
 }
 
 const api = new FreestyleSandboxes({
-	apiKey: process.env.FREESTYLE_API_KEY!,
+  apiKey: process.env.FREESTYLE_API_KEY!,
 });
 
 const files = readDirFiles("./vite-project");
 
-console.log(files);
-
 const now = Date.now();
 const result = await api.deployWeb(files, {
-	entrypoint: "./build/server/index.js",
+  // entrypoint: "./build/server/index.js",
+  entrypoint: "./run.js",
 });
 // const result = await api.deployWeb({
 // 	"index.js": {
