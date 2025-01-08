@@ -10,30 +10,30 @@ interface FileContent {
 
 function readDirFiles(dirPath: string): Record<string, FileContent> {
   const files: Record<string, FileContent> = {};
-
-  // Initialize ignore instance
   const ig = ignore();
-
-  // Read .gitignore if it exists
-  const gitignorePath = path.join(dirPath, ".gitignore");
-  if (fs.existsSync(gitignorePath)) {
-    const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
-    ig.add(gitignoreContent);
-  }
+  ig.add("node_modules");
 
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-
   for (const entry of entries) {
-    if (entry.isFile()) {
-      const relativePath = entry.name;
-      // Skip if file is ignored by gitignore
-      if (ig.ignores(relativePath)) {
-        continue;
-      }
+    const fullPath = path.join(dirPath, entry.name);
+    // Use path relative to 'dirPath' instead of the process cwd
+    const fileKey = path.relative(dirPath, fullPath);
 
-      const filePath = path.join(dirPath, entry.name);
-      const content = fs.readFileSync(filePath, "utf-8");
-      files[entry.name] = { content };
+    // Keep ignore checks with a path relative to cwd
+    const ignoreCheckPath = path.relative(process.cwd(), fullPath);
+
+    if (entry.isDirectory()) {
+      if (!ig.ignores(ignoreCheckPath)) {
+        const subFiles = readDirFiles(fullPath);
+        for (const [subKey, value] of Object.entries(subFiles)) {
+          files[path.join(fileKey, subKey)] = value;
+        }
+      }
+    } else if (entry.isFile()) {
+      if (!ig.ignores(ignoreCheckPath)) {
+        const content = fs.readFileSync(fullPath, "utf-8");
+        files[fileKey] = { content };
+      }
     }
   }
 
@@ -42,14 +42,15 @@ function readDirFiles(dirPath: string): Record<string, FileContent> {
 
 const api = new FreestyleSandboxes({
   apiKey: process.env.FREESTYLE_API_KEY!,
+  baseUrl: "http://localhost:8080",
 });
 
-const files = readDirFiles("./vite-project");
+const files = readDirFiles("./vite-project/");
 
 const now = Date.now();
 const result = await api.deployWeb(files, {
   // entrypoint: "./build/server/index.js",
-  entrypoint: "./run.js",
+  entrypoint: "run.js",
 });
 // const result = await api.deployWeb({
 // 	"index.js": {
