@@ -2,10 +2,14 @@ import { spawn } from "node:child_process";
 
 const env = { ...process.env, NODE_ENV: "production" };
 
-const serve = spawn("npx", ["react-router-serve", "./build/server/index.js"], {
-  env,
-  stdio: "inherit",
-});
+const serve = spawn(
+  "./node_modules/.bin/react-router-serve",
+  ["./build/server/index.js"],
+  {
+    env,
+    stdio: "inherit",
+  }
+);
 
 serve.on("error", (err) => {
   console.error("Failed to start server:", err);

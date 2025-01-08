@@ -8,32 +8,42 @@ interface FileContent {
   encoding?: string;
 }
 
-function readDirFiles(dirPath: string): Record<string, FileContent> {
+function readDirFiles(
+  dirPath: string,
+  baseDir: string = dirPath
+): Record<string, FileContent> {
   const files: Record<string, FileContent> = {};
 
-  // Initialize ignore instance
-  const ig = ignore();
+  // Initialize ignore instance (only on first call)
+  const ig = baseDir === dirPath ? ignore() : undefined;
 
-  // Read .gitignore if it exists
-  const gitignorePath = path.join(dirPath, ".gitignore");
-  if (fs.existsSync(gitignorePath)) {
-    const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
-    ig.add(gitignoreContent);
+  // Read .gitignore if it exists (only on first call)
+  if (ig) {
+    const gitignorePath = path.join(dirPath, ".gitignore");
+    if (fs.existsSync(gitignorePath)) {
+      const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
+      ig.add(gitignoreContent);
+    }
   }
 
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
   for (const entry of entries) {
-    if (entry.isFile()) {
-      const relativePath = entry.name;
-      // Skip if file is ignored by gitignore
-      if (ig.ignores(relativePath)) {
-        continue;
-      }
+    const fullPath = path.join(dirPath, entry.name);
+    const relativePath = path.relative(baseDir, fullPath);
 
-      const filePath = path.join(dirPath, entry.name);
-      const content = fs.readFileSync(filePath, "utf-8");
-      files[entry.name] = { content };
+    // Skip if file is ignored by gitignore
+    if (ig?.ignores(relativePath) || fullPath.includes("node_modules")) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      // Recursively read subdirectories
+      const subDirFiles = readDirFiles(fullPath, baseDir);
+      Object.assign(files, subDirFiles);
+    } else if (entry.isFile()) {
+      const content = fs.readFileSync(fullPath, "utf-8");
+      files[relativePath] = { content };
     }
   }
 
@@ -46,10 +56,12 @@ const api = new FreestyleSandboxes({
 
 const files = readDirFiles("./vite-project");
 
+console.log("files", files);
+
 const now = Date.now();
 const result = await api.deployWeb(files, {
   // entrypoint: "./build/server/index.js",
-  entrypoint: "./run.js",
+  entrypoint: "./entry.ts",
 });
 // const result = await api.deployWeb({
 // 	"index.js": {
