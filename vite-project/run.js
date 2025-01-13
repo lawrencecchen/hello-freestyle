@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { reactRouter } from "remix-hono/handler";
 // @ts-ignore
@@ -20,4 +19,5 @@ app.use(
     },
   })
 );
+
 Deno.serve(app.fetch);
