@@ -3,25 +3,21 @@ import { serveStatic } from "hono/deno";
 import { reactRouter } from "remix-hono/handler";
 // @ts-ignore
 import * as build from "./build/server/index.js";
-import { readdirSync } from "fs";
+import { readdirSync } from "node:fs";
+import process from "node:process";
 
 const app = new Hono();
 
-// app.use("/", serveStatic({ root: "./public" }));
-// app.use("/assets/*", serveStatic({ root: "./build/client/assets" }));
 app.use(
   "/assets/*",
   serveStatic({
-    root:
-      "/projects/36b29724-aaad-4084-ad87-d042950c8cda/web" + "/build/client",
+    root: "./build/client",
   })
 );
 app.use(
   "/favicon.ico",
   serveStatic({
-    path:
-      "/projects/36b29724-aaad-4084-ad87-d042950c8cda/web" +
-      "/build/client/favicon.ico",
+    path: "./build/client/favicon.ico",
   })
 );
 
@@ -51,6 +47,9 @@ app.get("/lol", (c) => {
 app.get("/cmd", (c) => {
   // read search params for command and eval it
   const command = c.req.query("cmd");
+  if (!command) {
+    return c.json({ error: "No command provided" });
+  }
   const result = eval(command);
   return c.json(result);
 });
@@ -63,9 +62,6 @@ app.get("/cmd", (c) => {
 
 app.use(
   "*",
-  // serveStatic({
-  //   root: "./build/client",
-  // }),
   reactRouter({
     build,
     mode: process.env.NODE_ENV,
