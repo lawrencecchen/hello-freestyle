@@ -12,16 +12,13 @@ const app = new Hono();
 app.use(
   "/assets/*",
   serveStatic({
-    root:
-      "/projects/36b29724-aaad-4084-ad87-d042950c8cda/web" + "/build/client",
+    root: "./build/client",
   })
 );
 app.use(
   "/favicon.ico",
   serveStatic({
-    path:
-      "/projects/36b29724-aaad-4084-ad87-d042950c8cda/web" +
-      "/build/client/favicon.ico",
+    path: "./build/client/favicon.ico",
   })
 );
 

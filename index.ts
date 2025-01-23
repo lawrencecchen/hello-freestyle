@@ -68,7 +68,7 @@ const now = Date.now();
 const result = await api.deployWeb(files, {
   // entrypoint: "./build/server/index.js",
   entrypoint: "run.js",
-  domains: ["testing12345.style.dev"],
+  domains: ["testing1234567.style.dev"],
 });
 
 console.log(result);
