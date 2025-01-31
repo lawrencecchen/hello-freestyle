@@ -68,10 +68,12 @@ const now = Date.now();
 const result = await api.deployWeb(files, {
   // entrypoint: "./build/server/index.js",
   entrypoint: "run.js",
-  domains: ["testing12345678.style.dev"],
+  domains: ["howfastisthis.bin.new"],
+  // domains: ["h.style.dev"],
 });
 
 console.log(result);
+console.log("files.length", JSON.stringify(files).length);
 console.log("Deployed website @ ", result.deploymentId);
 
 console.log("Time taken: ", Date.now() - now);
