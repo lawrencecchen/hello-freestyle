@@ -9,7 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "freestyle-sandboxes": "^0.0.13",
+    "freestyle-sandboxes": "^0.0.16",
     "ignore": "^7.0.0"
   }
 }

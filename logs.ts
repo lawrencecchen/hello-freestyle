@@ -4,6 +4,6 @@ const api = new FreestyleSandboxes({
   apiKey: process.env.FREESTYLE_API_KEY!,
 });
 
-api.getWebLogs("c87c5e7d-937d-4ca1-bdf4-54a300b5ebd6").then((logs) => {
-  console.log("Logs for project c87c5e7d-937d-4ca1-bdf4-54a300b5ebd6: ", logs);
+api.getWebLogs("2df70dfe-1cf6-4c37-b470-c2ecaccb17af").then((logs) => {
+  console.log("Logs for project 2df70dfe-1cf6-4c37-b470-c2ecaccb17af: ", logs);
 });
